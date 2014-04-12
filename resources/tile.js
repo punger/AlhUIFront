@@ -5,9 +5,13 @@
 function Tile(color, value, id) {
     var mcol, mval, mid;
     if (typeof color === "object") {
-        mcol = color.color;
-        mval = color.value;
-        mid = color.id;
+        var tileObj;
+        if (color.hasOwnProperty("gt")) {
+            tileObj = color.gt;
+        } else tileObj = color;
+        mcol = tileObj.color;
+        mval = tileObj.cost;
+        mid = tileObj.resourceId;
     } else {
         mcol = color;
         mval = value;

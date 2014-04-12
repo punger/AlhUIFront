@@ -2,24 +2,38 @@
  * Created by paul on 3/30/2014.
  */
 
-function Game(plin, startplayer) {
+function Game(plin, startplayer, cb) {
     var players = plin;
     var curplayer = startplayer;
-    var roster = [];
+    var roster = {};
     var xchg;
-    $.each(players, function(i, p) {
-        roster[p] = new Player(p, this);
-    });
-    $.getJSON("exchange", function(x) {
-        xchg = [];
-        alert("exchange "+JSON.stringify(x));
-        $.each(x, function(i, c) {
-            var cd = new Card(c);
-            xchg.push(cd);
-        });
-    });
-
-
+    var mkt;
+    var me = this;
+    async.parallel(
+        {
+            "iXchg": function(cb2) {
+                xchg = new Exchange();
+                xchg.fill(cb2);
+            },
+            "iMkt": function(cb2) {
+                mkt = new Market();
+                mkt.refresh(cb2);
+            },
+            "iPlayers": function(cb2) {
+                async.each(players,
+                    function (p, cb3) {
+                        roster[p] = new Player(p, me, cb3);
+                    },
+                    function(err) {
+                        cb2(err, roster);
+                    }
+                );
+            }
+        },
+        function(err, res) {
+            cb(err, res);
+        }
+    );
     return {
         "getplayer": function (p) {
             return roster[p];
@@ -29,6 +43,9 @@ function Game(plin, startplayer) {
         },
         "getcurplayer": function () {
             return curplayer;
+        },
+        "getmarket": function() {
+            return mkt;
         }
     }
 }

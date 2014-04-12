@@ -21,6 +21,14 @@ function Card (value, color) {
         get img()   { return "resources/images/"+mid+".png"; },
         get id()    { return mid;},
         get value() { return mval;},
-        get color() { return mcol;}
+        get color() { return mcol;},
+        "eq": function (o) {
+            if (o instanceof Card) {
+                if (o.value == mval && o.color == mcol)
+                    return true;
+            }
+            return false;
+        }
+
     };
 }

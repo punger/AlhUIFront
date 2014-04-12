@@ -2,41 +2,45 @@
  * Created by paul on 3/30/2014.
  */
 
-function Player(pcolor, g) {
+function Player(pcolor, g, cb) {
     var game = g;
     var mycolor = pcolor;
     var hand;
+    var reserve = [];
+    var tempTiles = [];
     var board = new Board(mycolor);
 
     $.getJSON("playerhand", {
         player: mycolor
     }, function(h) {
-        hand = [];
+        hand = new Cardset();
         alert("player hand"+JSON.stringify(h));
         $.each(h, function(i, c) {
             var cd = new Card(c);
-            hand.push(cd);
+            hand.add(cd);
         });
+        if (cb) cb(null, hand);
     });
     return {
-        "sethand": function (h) {
-            hand = h;
-        },
-        "gethand": function () {
-            return hand;
-        },
+        get hand () { return hand; },
+        get color() { return mycolor; },
+        get board() { return board; },
+        get reserve() { return reserve; },
+        "startturn": function() {},
         "addtile": function(tile, position, cb) {
             $.get("")
         },
         "addtoreserve": function(tile) {
 
         },
-        "getcolor": function() { return mycolor; },
         "addcards": function(cards) {
-            if (cards instanceof Card) {
-                hand.push(cards);
-                $.get("")
-            }
+            hand.add(cards);
+        },
+        "place": function(tile, position) {
+
+        },
+        "buy": function() {
+
         }
-    }
+    };
 }
