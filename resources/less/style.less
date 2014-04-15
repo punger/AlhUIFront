@@ -1,8 +1,10 @@
-html, body
-{
+html, body {
   height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 5;
+  font-size: inherit;
 }
-
 .alhlayout,table,tr,td {
   border: 2px solid black;
 }
@@ -37,35 +39,91 @@ html, body
   height: 100%;
 }
 
-#playerbox {
+#playerbox0 {
   width: 100%;
 }
 
 #otherplayers {
   height: 25%;
+  min-height: 125px;
 }
 
 #commonboard {
   height: 30%;
+  min-height: 150px;
 }
 
 #player {
   height: 45%;
+  min-height: 225px;
 }
 
-.marketTile {
+.gamepiece {
   border: 8px ;
   border-style: solid;
+  display: inline-block;
+  position: absolute;
+  border-color: inherit;
 }
 
 .gamepiece-selected {
-  border-color: yellow;
+  border-color: darkorange;
 }
 
 .gamepiece-unselected {
-  border-color: black;
+  border-color: lightgoldenrodyellow;
+}
+
+.card {
+  border-radius: 15px;
+}
+
+.gamepiece img {
+  width: 100%;
+  height: 100%;
+}
+
+#market, #exchange {
+  height: 400px;
+  border: 1px solid black;
+}
+
+#playerbox0, .actions, .hand, .alhambra, .reserve {
+  height: 100%;
+}
+
+.playerDiv {
+  height: 300px;
+}
+
+.cardDiv {
+  position: absolute;
+  height: 100%;
+  width: 100%;
 }
 
 #marketDiv {
-  background-image: "resources/image/Market.png";
+//  background-size: contain;
+//  background: url("../images/Market.png") no-repeat;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+//.marketTile {
+//  .gamepiece;
+//}
+
+//.marketTile img {
+//  height: 100%;
+//  width: 100%;
+//}
+
+.container-fluid {
+  width: 100%;
+}
+
+.nopadding {
+  padding: 0 !important;
+  margin: 0 !important;
 }

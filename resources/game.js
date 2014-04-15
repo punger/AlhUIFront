@@ -35,12 +35,21 @@ function Game(plin, startplayer, cb) {
         }
     );
     return {
-        "getplayer": function (p) {
-            return roster[p];
+        /**
+         *
+         * @param pColor a player color
+         * @returns {*} the player object of that color
+         */
+        "getplayer": function (pColor) {
+            return roster[pColor];
         },
         "getexchange": function() {
             return xchg;
         },
+        /**
+         *
+         * @returns {*} player color
+         */
         "getcurplayer": function () {
             return curplayer;
         },

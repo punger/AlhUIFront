@@ -3,11 +3,14 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Alhambra 1</title>
-    <!-- Style related links -->
-    <link rel="stylesheet/less" type="text/css" href="resources/less/style.less" />
 
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
+
+    <!-- Style related links -->
+    <link rel="stylesheet/less" type="text/css" href="resources/less/style.less" />
+
+
     <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
     <script type="application/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script type="application/javascript" src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.0/less.min.js"></script>
@@ -26,15 +29,24 @@
     <script type="application/javascript" src="resources/market.js"></script>
     <script type="application/javascript" src="resources/exchange.js"></script>
     <script type="application/javascript" src="resources/cardset.js"></script>
+    <!--
     <script type="application/javascript" src="resources/main.js"></script>
-
+    -->
     <script type="application/javascript" src="resources/jqui/jqmarket.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqselectable.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqexchange.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqplayer.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqcardset.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqhand.js"></script>
 </head>
 <body>
 <script type="text/javascript">
 $(function() {
     var game;
     var marketui;
+    var exchangeui;
+    var playerui;
+    var roster;
 
     async.waterfall(
         [
@@ -48,6 +60,7 @@ $(function() {
                 getplayerlist('#anchor', fpResp,
                         function(players) {
                             console.log('player dialog returned' + JSON.stringify(players));
+                            roster = players;
                             cb(null, players);
                         });
             },
@@ -65,6 +78,15 @@ $(function() {
                                 cb("Server error: "+result.message);
                             }
                             var startPlayer = result.player;
+                            // Reorder the players so that the start player is in the first entry
+                            for (var i = 0; i < roster.length; i++) {
+                                if (roster[i] === startPlayer) {
+                                    if (i > 0) {
+                                        roster = roster.slice(i).concat(roster.slice(0, i));
+                                    }
+                                    break;
+                                }
+                            }
                             game = new Game(players, startPlayer, cb);
                         },
                         error: function (jqXHR, textStatus, errorThrown ) {
@@ -74,17 +96,49 @@ $(function() {
                 );
             },
             function(gameres, cb) {
-                async.series([
-                    function(cb2) {
-                        marketui = new MarketJQ(game, "#market", cb2);
+                async.parallel({
+                    "showMkt": function(cb1) {
+                        async.series(
+                            [
+                                function(cb2) {
+                                    marketui = new MarketJQ(game, "#market", cb2);
+                                },
+                                function(cb2) {
+                                    marketui.show();
+                                    cb2(null)
+                                }
+                            ],
+                            function(err) {
+                                cb1(err, marketui);
+                            }
+                        );
                     },
-                    function(cb2) {
-                        marketui.show();
-                        cb2(null)
+                    "showXchg": function(cb1) {
+                        async.series(
+                            [
+                                function(cb2) {
+                                    exchangeui = new ExchangeJQ(game, "#exchange", cb2);
+                                },
+                                function(cb2) {
+                                    exchangeui.show();
+                                    cb2(null)
+                                }
+                            ],
+                            function(err) {
+                                cb1(err, exchangeui);
+                            }
+                        );
+                    },
+                    "showPlayers": function(cb1) {
+//                        var iterArray = [];
+//                        for (var i = 0; i < roster.length; i++)
+//                            iterArray.push(i);
+//                        async.each(iterArray, );
+                        playerui = new PlayerJQ(game.getplayer(game.getcurplayer()), "#playerbox0", cb1);
                     }
-                ],
-                function(err) {
-                    cb(null, "success");
+                },
+                function(err, res) {
+                    cb(err, res);
                 });
             }
         ],
@@ -93,36 +147,6 @@ $(function() {
         }
     );
     console.log("fell out of asynch loop");
-//    $.getJSON('fullplayerlist', function (resp) {
-//        console.log(JSON.stringify(resp));
-//        getplayerlist('#anchor', resp, function(players) {
-//            console.log('player dialog returned'+JSON.stringify(players));
-//            $.ajax("startgame",
-//                {
-//                    data: { "players": players},
-//                    dataType: "json",
-//                    traditional: true,
-//                    success: function (result) {
-//                        if (!result) {
-//                            alert("Empty return from server.");
-//                            return;
-//                        }
-//                        if (!result.success) {
-//                            alert("Server error: "+result.message);
-//                            return;
-//                        }
-//                        var startplayer = result.player;
-//                        game = new Game(players, startplayer);
-//                        marketui = new MarketJQ(game, "#market");
-//                        marketui.show();
-//                    },
-//                    error: function (jqXHR, textStatus, errorThrown ) {
-//                        alert ("Start game failed: '"+textStatus+"', err'"+errorThrown+"'");
-//                    }
-//                }
-//            );
-//        });
-//    });
 
 });
 
@@ -131,21 +155,24 @@ $(function() {
 <div class="container-fluid">
     <div id="anchor"></div>
 
-    <div id="otherplayers" class="row brdtblregion">
-        <div class="otherplayerbox col-md-6">
+    <div id="otherplayers" class="row-fluid brdtblregion">
+        <div id="playerbox1" class="otherplayerbox col-md-6">
             player 1
         </div>
-        <div class="otherplayerbox col-md-6">
+        <div id="playerbox2" class="otherplayerbox col-md-6">
             player 2
         </div>
     </div>
-    <div id="commonboard" class="row brdtblregion">
-        <div style="overflow: scroll; overflow-style: scrollbar" id="deck" class="col-md-2">deck <img src="resources/images/blue2.png"/> </div>
-        <div id="exchange" class="col-md-4">exchange</div>
-        <div id="market" class="col-md-6">market</div>
+    <div id="commonboard" class="row-fluid brdtblregion nopadding">
+        <div style="overflow: scroll; overflow-style: scrollbar" id="deck" class="col-md-2">deck </div>
+        <div id="exchange" class="col-md-4 nopadding">exchange</div>
+        <div id="market" class="col-md-6 nopadding">market</div>
     </div>
-    <div id="player" class="row brdtblregion">
-        <div id="playermat" class="col-md-12">player</div>
+    <div id="playerbox0" class="row-fluid brdtblregion">
+        <div id="actions" class="col-md-1">actions</div>
+        <div class="hand col-md-3">hand</div>
+        <div class="alhambra col-md-6">alhambra</div>
+        <div class="reserve col-md-2">reserve</div>
     </div>
 </div>
 </body>

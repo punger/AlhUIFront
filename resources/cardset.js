@@ -52,6 +52,9 @@ function Cardset() {
                 }
             } else if (card instanceof Cardset) {
                 this.add(card.cards);
+            } else {
+                var oCard = new Card(card);
+                cards.push(oCard);
             }
         },
         "remove": function() {
