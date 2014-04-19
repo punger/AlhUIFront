@@ -7,7 +7,7 @@ function Exchange() {
     var refresh = function (cb) {
         $.getJSON("exchange", function(x) {
             xchg = new Cardset();
-            alert("exchange "+JSON.stringify(x));
+            console.log("exchange "+JSON.stringify(x));
             $.each(x, function(i, c) {
                 var cd = new Card(c);
                 xchg.add(cd);

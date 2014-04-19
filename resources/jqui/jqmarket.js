@@ -21,7 +21,7 @@ function MarketJQ(g, parent, cb) {
 
     return {
         "show": function() {
-            var slots = game.getmarket().m;
+            var slots = game.market.m;
             var h =  $me.height();
             var w = $me.width();
 //            var $mktDiv = $me.find("#marketDiv");

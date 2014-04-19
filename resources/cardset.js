@@ -20,11 +20,11 @@ function Cardset() {
                     }
                 }
                 if (slot < 0) {
-                    console.log("Card not found in cardset "+ JSON.stringify(index));
+                    console.error("Card not found in cardset "+ JSON.stringify(index));
                     return;
                 }
             } else {
-                console.log("Invalid argument to cardset select "+ index);
+                console.error("Invalid argument to cardset select "+ index);
                 return;
             }
             if (slot < 0 || slot >= cards.length) return;

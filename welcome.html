@@ -38,6 +38,8 @@
     <script type="application/javascript" src="resources/jqui/jqplayer.js"></script>
     <script type="application/javascript" src="resources/jqui/jqcardset.js"></script>
     <script type="application/javascript" src="resources/jqui/jqhand.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqactions.js"></script>
+    <script type="application/javascript" src="resources/jqui/jqgame.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -46,6 +48,7 @@ $(function() {
     var marketui;
     var exchangeui;
     var playerui;
+    var gameui;
     var roster;
 
     async.waterfall(
@@ -87,7 +90,7 @@ $(function() {
                                     break;
                                 }
                             }
-                            game = new Game(players, startPlayer, cb);
+                            game = new Game(players,startPlayer,cb);
                         },
                         error: function (jqXHR, textStatus, errorThrown ) {
                             cb("Start game failed: '"+textStatus+"', err'"+errorThrown+"'");
@@ -128,18 +131,24 @@ $(function() {
                                 cb1(err, exchangeui);
                             }
                         );
-                    },
-                    "showPlayers": function(cb1) {
-//                        var iterArray = [];
-//                        for (var i = 0; i < roster.length; i++)
-//                            iterArray.push(i);
-//                        async.each(iterArray, );
-                        playerui = new PlayerJQ(game.getplayer(game.getcurplayer()), "#playerbox0", cb1);
                     }
                 },
                 function(err, res) {
                     cb(err, res);
                 });
+            },
+            function(builtuis, cb) {
+                playerui = new PlayerJQ(
+                        game, game.curplayer, "#playerbox0", cb);
+            },
+            function(puis, cb) {
+
+                gameui = new GameJQ(game, {
+                    "m": marketui,
+                    "x": exchangeui,
+                    "p": playerui
+                });
+                cb();
             }
         ],
         function(err, result) {
@@ -152,28 +161,76 @@ $(function() {
 
 </script>
 
-<div class="container-fluid">
+
+<div class="main">
     <div id="anchor"></div>
 
-    <div id="otherplayers" class="row-fluid brdtblregion">
-        <div id="playerbox1" class="otherplayerbox col-md-6">
-            player 1
+    <table id="maindisplay">
+        <tr>
+            <td id="otherplayers">
+                <table>
+                    <tr>
+                        <td>
+                            <div id="playerbox1" class="otherplayerbox">
+                                player 1
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="playerbox2" class="otherplayerbox">
+                                player 2
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td id="mainboard">
+                <table>
+                    <tr>
+                        <td>
+                            <div id="exchange" class="nopadding">exchange</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="market" class="nopadding">market</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td id="playerbox0"></td>
+        </tr>
+    </table>
+    <div class="row-fluid brdtblregion">
+        <div  class="col-md-2">
         </div>
-        <div id="playerbox2" class="otherplayerbox col-md-6">
-            player 2
+        <div class="col-md-4">
         </div>
-    </div>
-    <div id="commonboard" class="row-fluid brdtblregion nopadding">
-        <div style="overflow: scroll; overflow-style: scrollbar" id="deck" class="col-md-2">deck </div>
-        <div id="exchange" class="col-md-4 nopadding">exchange</div>
-        <div id="market" class="col-md-6 nopadding">market</div>
-    </div>
-    <div id="playerbox0" class="row-fluid brdtblregion">
-        <div id="actions" class="col-md-1">actions</div>
-        <div class="hand col-md-3">hand</div>
-        <div class="alhambra col-md-6">alhambra</div>
-        <div class="reserve col-md-2">reserve</div>
+        <div class="col-md-5">
+        </div>
     </div>
 </div>
+<!--<div class="container-fluid">-->
+    <!--<div id="anchor"></div>-->
+
+    <!--<div class="row-fluid brdtblregion">-->
+        <!--<div  id="otherplayers" class="col-md-2">-->
+            <!--<div id="playerbox1" class="otherplayerbox">-->
+                <!--player 1-->
+            <!--</div>-->
+            <!--<div id="playerbox2" class="otherplayerbox">-->
+                <!--player 2-->
+            <!--</div>-->
+
+        <!--</div>-->
+        <!--<div id="mainboard" class="col-md-4">-->
+            <!--<div id="exchange" class="nopadding">exchange</div>-->
+            <!--<div id="market" class="nopadding">market</div>-->
+        <!--</div>-->
+        <!--<div id="playerbox0" class="col-md-5">-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
 </body>
 </html>

@@ -10,17 +10,22 @@ function Player(pcolor, g, cb) {
     var tempTiles = [];
     var board = new Board(mycolor);
 
-    $.getJSON("playerhand", {
-        player: mycolor
-    }, function(h) {
-        hand = new Cardset();
-        alert("player hand"+JSON.stringify(h));
-        $.each(h, function(i, c) {
-            var cd = new Card(c);
-            hand.add(cd);
+    var resetHand = function(cb0) {
+        $.getJSON("playerhand", {
+            player: mycolor
+        }, function(h) {
+            hand = new Cardset();
+            console.log("player hand for player "+mycolor+" is "+JSON.stringify(h));
+            $.each(h, function(i, c) {
+                var cd = new Card(c);
+                hand.add(cd);
+            });
+            if (cb0) cb0(null, hand);
         });
-        if (cb) cb(null, hand);
-    });
+    };
+
+    resetHand(cb);
+
     return {
         get hand () { return hand; },
         get color() { return mycolor; },
@@ -41,6 +46,9 @@ function Player(pcolor, g, cb) {
         },
         "buy": function() {
 
+        },
+        "resetHand": function(cb) {
+            resetHand(cb);
         }
     };
 }

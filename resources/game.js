@@ -2,6 +2,14 @@
  * Created by paul on 3/30/2014.
  */
 
+/**
+ * Game object holds other objects.  Constructs exchange, market and players
+ * @param {array} plin array of participating player colors
+ * @param {string} startplayer the color of the start player
+ * @param {parallelCallback} cb synchronization callback
+ * @returns {object}
+ * @constructor
+ */
 function Game(plin, startplayer, cb) {
     var players = plin;
     var curplayer = startplayer;
@@ -34,27 +42,109 @@ function Game(plin, startplayer, cb) {
             cb(err, res);
         }
     );
+
+    var nextPlayer = function(pCol, cb) {
+
+    };
+
+    var endTurn = function(cb) {
+        $.getJSON("endofturn", function(srvrStat) {
+            if (!srvrStat.success) {
+                //  problem or scoring
+                cb("End turn server error: "+srvrStat.message);
+            }
+            // just go to next player
+            async.parallel({
+                "player": function(cb1) {
+                    cb1(null, "ok");
+                },
+                "mkt": function(cb1) {
+                    mkt.refresh(cb1);
+                },
+                "xchg": function(cb1) {
+                    xchg.fill(cb1);
+                }
+            },
+            function(err, res) {
+                console.log("End turn status "+(err || "ok")+", val "+JSON.stringify(res));
+                cb(err);
+            });
+//            nextPlayer(srvrStat.player, cb);
+        });
+
+    };
     return {
-        /**
+        /*
          *
-         * @param pColor a player color
-         * @returns {*} the player object of that color
+         * @param {string} pColor - a player color
+         * @returns {object} - the player object of that color
          */
         "getplayer": function (pColor) {
             return roster[pColor];
         },
-        "getexchange": function() {
+        get exchange() {
             return xchg;
         },
         /**
          *
          * @returns {*} player color
          */
-        "getcurplayer": function () {
+        get curplayer () {
             return curplayer;
         },
-        "getmarket": function() {
+        get market() {
             return mkt;
+        },
+        "take": function(wanted, cb) {
+            var xCardArray = $.map(wanted, function(c, i){
+                return {
+                    "color": c.color,
+                    "value": c.value
+                };
+            });
+            async.series([
+                function(cb1) {
+                    var cardarg = JSON.stringify(xCardArray);
+//                    var cardarg = decodeURIComponent(JSON.stringify({ "cards": xCardArray}));
+//                    var cardarg = decodeURIComponent($.param({ "cards": xCardArray}));
+                    console.log("About to call take with card list arg "+ cardarg);
+                    $.ajax("takecards", {
+                        "success": function(srvrStat) {
+                            if (!srvrStat.success) {
+                                cb1("Server error: "+srvrStat.message)
+                            }
+                            roster[curplayer].addcards(wanted);
+                            cb1();
+                        },
+                        "headers": {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        "data": cardarg,
+                        "dataType": "json",
+//                        "traditional": true,
+                        "type": "POST",
+                        contentType: 'application/json',
+                        mimeType: 'application/json'
+
+                    });
+                },
+                endTurn
+
+            ],
+            function (err) {
+                if (err) {
+                    alert(err);
+                }
+                cb(err);
+            });
         }
     }
 }
+
+/**
+ * @callback parallelCallback
+ * @param {string} status
+ * @param {object} value
+ */
+
