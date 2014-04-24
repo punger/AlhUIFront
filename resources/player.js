@@ -8,7 +8,7 @@ function Player(pcolor, g, cb) {
     var hand;
     var reserve = [];
     var tempTiles = [];
-    var board = new Board(mycolor);
+    var board;
 
     var resetHand = function(cb0) {
         $.getJSON("playerhand", {
@@ -24,19 +24,31 @@ function Player(pcolor, g, cb) {
         });
     };
 
-    resetHand(cb);
+    async.parallel({
+        "board": function(cb1) {
+            board = new Board(mycolor, cb1);
+        },
+        "hand":  function(cb1) {
+            resetHand(cb1);
+        }
+    },
+    function (err, res) {
+        if (cb) cb(err, res);
+    });
+
 
     return {
         get hand () { return hand; },
         get color() { return mycolor; },
         get board() { return board; },
         get reserve() { return reserve; },
+        get reserveAsTileset() { return { "tiles": reserve}; },
         "startturn": function() {},
         "addtile": function(tile, position, cb) {
             $.get("")
         },
         "addtoreserve": function(tile) {
-
+            reserve.push(tile);
         },
         "addcards": function(cards) {
             hand.add(cards);

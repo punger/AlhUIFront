@@ -96,7 +96,7 @@ function Game(plin, startplayer, cb) {
             return mkt;
         },
         "take": function(wanted, cb) {
-            var xCardArray = $.map(wanted, function(c, i){
+            var xCardArray = $.map(wanted, function(c){
                 return {
                     "color": c.color,
                     "value": c.value
@@ -111,7 +111,8 @@ function Game(plin, startplayer, cb) {
                     $.ajax("takecards", {
                         "success": function(srvrStat) {
                             if (!srvrStat.success) {
-                                cb1("Server error: "+srvrStat.message)
+                                cb1("Server error: "+srvrStat.message);
+                                return;
                             }
                             roster[curplayer].addcards(wanted);
                             cb1();
@@ -138,6 +139,55 @@ function Game(plin, startplayer, cb) {
                 }
                 cb(err);
             });
+        },
+        "buy": function(offer, tilepos, cb) {
+            var xCardArray = $.map(offer, function(c){
+                return {
+                    "color": c.color,
+                    "value": c.value
+                };
+            });
+            var proffer = {
+                "offer": xCardArray,
+                "slot": tilepos
+            };
+            var buyarg = JSON.stringify(proffer);
+            async.series([
+                function(cb1) {
+                    console.log("About to call buy with card list arg  and vendor "+ buyarg);
+                    $.ajax("buytile", {
+                        "success": function(srvrStat) {
+                            if (!srvrStat.success) {
+                                cb1("Server error: "+srvrStat.message);
+                                return;
+                            }
+                            var p = roster[curplayer];
+                            var tile = mkt.getatslot(tilepos);
+                            p.addtoreserve(tile);
+                            p.resetHand(cb1);
+                        },
+                        "headers": {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        "data": buyarg,
+                        "dataType": "json",
+                        "type": "POST",
+                        contentType: 'application/json',
+                        mimeType: 'application/json'
+
+                    });
+                },
+                endTurn
+
+            ],
+            function (err) {
+                if (err) {
+                    alert(err);
+                }
+                cb(err);
+            });
+
         }
     }
 }

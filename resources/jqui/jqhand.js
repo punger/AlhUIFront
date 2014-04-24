@@ -14,7 +14,7 @@ function HandJQ(player, parent, cb) {
             csjq.reset(p.hand, cb);
         },
         get selectedCards() {
-            return csjq.selectedCards();
+            return csjq.selectedCards;
         }
     };
 }

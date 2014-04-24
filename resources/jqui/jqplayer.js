@@ -44,11 +44,36 @@ function PlayerJQ(game, pCol, parent, cbPlayer) {
     };
 
     var boardSetup = function(cb2) {
-        cb2(null, "theBoard");
+        var b;
+        async.series([
+                function(cb3) {
+                    b = new BoardJQ(p,"#player-board-"+ p.color, cb3);
+                },
+                function(cb3) {
+                    b.show();
+                    cb3();
+                }
+            ],
+            function(err) {
+                cb2(err, b);
+            });
     };
 
     var reserveSetup =  function (cb2) {
-        cb2(null, "theReserve");
+        var r;
+        async.series([
+                function(cb3) {
+                    r = new TilesetJQ(p.reserveAsTileset,
+                            "#"+"player-reserve-"+ p.color, 'tile-'+ p.color, cb3);
+                },
+                function(cb3) {
+                    r.show();
+                    cb3();
+                }
+            ],
+            function(err) {
+                cb2(err, r);
+            });
     };
 
     var actionsSetup = function(cb2) {
@@ -103,22 +128,57 @@ function PlayerJQ(game, pCol, parent, cbPlayer) {
                     cb(err, handui);
                 }
             );
-//            handSetup(function (status, hui) {
-//                handui = hui;
-//                if (cb) cb(status);
-//            });
         },
         "resetBoard": function(cb) {
-            boardSetup(function(status, bui) {
-                boardui = bui;
-                if (cb) cb(status);
-            });
+            async.series(
+                [
+                    function(cb2) {
+                        boardui.reset(cb2);
+                    },
+                    function(cb2) {
+                        boardui.show();
+                        cb2(null)
+                    }
+                ],
+                function(err) {
+                    cb(err, boardui);
+                }
+            );
         },
         "resetReserve": function(cb) {
-            reserveSetup(function(status, rui) {
-                resui = rui;
-                if (cb) cb(status);
+            async.series(
+                [
+                    function(cb2) {
+                        resui.reset(p.reserveAsTileset, cb2);
+                    },
+                    function(cb2) {
+                        resui.show();
+                        cb2(null)
+                    }
+                ],
+                function(err) {
+                    cb(err, resui);
+                });
+
+        },
+        "resetAll": function(cb) {
+            async.parallel({
+                "h": this.resetHand,
+                "r": this.resetReserve,
+                "b": this.resetBoard
+//                    ,
+//                "a": this.resetAction
+            },
+            function(err, res) {
+                console.log("Player reset all: stat="+(err || "ok")+
+                    ", val="+JSON.stringify(res));
+                cb(err);
             });
+        },
+        "showPossibleTileLocations": function(possibleLoc) {
+            boardui.clearPossible();
+//            boardui.show();
+            boardui.showPossible(possibleLoc);
         }
     }
 

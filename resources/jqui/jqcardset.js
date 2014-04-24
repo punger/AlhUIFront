@@ -2,6 +2,16 @@
  * Created by paul on 4/14/2014.
  */
 
+/**
+ *
+ * @param {Cardset} cs - set of cards to display
+ * @param {string} parent - what to hang the display off of
+ * @param {string} idClass - identifier that will differentiate the ids of
+ * this card set from those of other card sets
+ * @param cb
+ * @returns {CardsetJQ} UI for displaying a cardset
+ * @constructor
+ */
 function CardsetJQ(cs, parent, idClass, cb) {
     var cardset = cs;
     var p = parent;

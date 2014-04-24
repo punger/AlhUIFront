@@ -17,7 +17,8 @@ function ActionJQ(player, parent, cb) {
             {"b": "buy", "d":"Buy"},
             {"b": "toReserve", "d":"Move to Reserve"},
             {"b": "fromReserve", "d":"Move to Board"}
-        ]
+        ],
+        "color": player
     };
 
     var actionDirective = {
@@ -29,7 +30,9 @@ function ActionJQ(player, parent, cb) {
                     return "actionid-"+player+"-"+this.b;
                 }
             }
-        }
+        },
+        ".playername": "color",
+        ".playermeeple@style+": "; background: #{color}"
     };
     $me.load("resources/htmlfrag/playeractions.html",
         function( response, status, xhr ) {
