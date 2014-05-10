@@ -64,7 +64,7 @@ function PlayerJQ(game, pCol, parent, cbPlayer) {
         async.series([
                 function(cb3) {
                     r = new TilesetJQ(p.reserveAsTileset,
-                            "#"+"player-reserve-"+ p.color, 'tile-'+ p.color, cb3);
+                            "#"+"player-reserve-"+ p.color, 'reserveTile-'+ p.color, cb3);
                 },
                 function(cb3) {
                     r.show();
@@ -77,7 +77,7 @@ function PlayerJQ(game, pCol, parent, cbPlayer) {
     };
 
     var actionsSetup = function(cb2) {
-        var aui = new ActionJQ(p.color, "#player-actions-"+ p.color, function(status) {
+        var aui = new ActionJQ(p, "#player-actions-"+ p.color, function(status) {
             cb2(status, aui);
         });
     };
@@ -109,76 +109,78 @@ function PlayerJQ(game, pCol, parent, cbPlayer) {
         cbPlayer(err, "dummyobj");
     });
 
+    var resetAny = function(componentUI, cb, content) {
+        async.series(
+            [
+                function(cb2) {
+                    if (content) {
+                        componentUI.reset(content, cb2);
+                    } else {
+                        componentUI.reset(cb2);
+                    }
+                },
+                function(cb2) {
+                    if (componentUI.hasOwnProperty("show"))
+                        componentUI.show();
+                    cb2();
+                }
+            ],
+            function(err) {
+                cb(err, componentUI);
+            }
+        );
+    };
+
     return {
         get offer() {
             return handui.selectedCards;
         },
+        get selectedReserveTile() {
+            var selTiles = resui.selectedTiles;
+            if (selTiles === null || selTiles.length === 0) return null;
+            return selTiles[0];
+        },
+        get selectedTempTile() {
+            return boardui.selectedTempTile;
+        },
         "resetHand": function(cb) {
-            async.series(
-                [
-                    function(cb2) {
-                        handui.reset(cb2);
-                    },
-                    function(cb2) {
-                        handui.show();
-                        cb2(null)
-                    }
-                ],
-                function(err) {
-                    cb(err, handui);
-                }
-            );
+            resetAny(handui, cb);
         },
         "resetBoard": function(cb) {
-            async.series(
-                [
-                    function(cb2) {
-                        boardui.reset(cb2);
-                    },
-                    function(cb2) {
-                        boardui.show();
-                        cb2(null)
-                    }
-                ],
-                function(err) {
-                    cb(err, boardui);
-                }
-            );
+            resetAny(boardui, cb);
         },
         "resetReserve": function(cb) {
-            async.series(
-                [
-                    function(cb2) {
-                        resui.reset(p.reserveAsTileset, cb2);
-                    },
-                    function(cb2) {
-                        resui.show();
-                        cb2(null)
-                    }
-                ],
-                function(err) {
-                    cb(err, resui);
-                });
-
+            resetAny(resui, cb, p.reserveAsTileset);
+        },
+        "resetAction": function(cb) {
+            resetAny(actui, cb);
         },
         "resetAll": function(cb) {
             async.parallel({
                 "h": this.resetHand,
                 "r": this.resetReserve,
-                "b": this.resetBoard
-//                    ,
-//                "a": this.resetAction
+                "b": this.resetBoard,
+                "a": this.resetAction
             },
             function(err, res) {
                 console.log("Player reset all: stat="+(err || "ok")+
-                    ", val="+JSON.stringify(res));
+                    ", val="+JSON.stringify(res, null, 2));
                 cb(err);
             });
         },
-        "showPossibleTileLocations": function(possibleLoc) {
+        "reset": function(cb) {
+            this.resetAll(cb);
+        },
+        "showPossibleTileLocations": function(possibleLoc, source) {
             boardui.clearPossible();
 //            boardui.show();
-            boardui.showPossible(possibleLoc);
+            boardui.showPossible(possibleLoc, source);
+        },
+        "clearPossibles": function() {
+            boardui.clearPossible();
+        },
+        get target() {
+            return p;
         }
     }
 

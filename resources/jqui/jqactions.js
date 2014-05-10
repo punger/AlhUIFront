@@ -4,7 +4,7 @@
 
 /**
  * Set up all the available actions
- * @param {string} player color
+ * @param {object} player
  * @param {string} parent selector
  * @param cb for completion
  * @constructor
@@ -16,18 +16,24 @@ function ActionJQ(player, parent, cb) {
             {"b": "take", "d":"Take"},
             {"b": "buy", "d":"Buy"},
             {"b": "toReserve", "d":"Move to Reserve"},
-            {"b": "fromReserve", "d":"Move to Board"}
+            {"b": "fromReserve", "d":"Move to Board"},
+            {"b": "forceEndTurn", "d":"Force end turn", "noDisplay": true}
         ],
-        "color": player
+        "color": player.color
     };
 
     var actionDirective = {
         ".actionset": {
             "btn<-buttons": {
                 "button": "btn.d",
-                "button@class+": " action-#{btn.b}",
+                "button@class+": function() {
+                    var c = " action-"+this.b;
+                    if (this.noDisplay)
+                        c += " action-hidden";
+                    return c;
+                },
                 "button@id": function() {
-                    return "actionid-"+player+"-"+this.b;
+                    return "actionid-"+player.color+"-"+this.b;
                 }
             }
         },
@@ -44,5 +50,25 @@ function ActionJQ(player, parent, cb) {
             }
         }
     );
+
+    return {
+        "hasTemps": function(yesno) {
+            $me = $(parent);
+            if (yesno) {
+                $me.find(".action-forceEndTurn").removeClass("action-hidden");
+            } else {
+                $me.find(".action-forceEndTurn").addClass("action-hidden");
+            }
+        },
+        "reset": function(cb) {
+            this.hasTemps(player.temp && player.temp.length > 0);
+            cb();
+        },
+        get target() {
+            return {
+                "temp": player.temp
+            }
+        }
+    }
 
 }

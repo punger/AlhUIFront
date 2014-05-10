@@ -4,16 +4,16 @@
 
 function ExchangeJQ(g, parent, cb) {
     var csjq;
-    var reset = function(cbo) {
+    var setup = function(cbo) {
         csjq = new CardsetJQ(g.exchange, parent, 'xchg', cbo);
     };
-    reset(cb);
+    setup(cb);
     return {
         "show": function() {
             return csjq.show();
         },
-        "reset": function(cs, cb) {
-            csjq.reset(cs, cb);
+        "reset": function(cb) {
+            csjq.reset(g.exchange, cb);
         },
         /**
          *

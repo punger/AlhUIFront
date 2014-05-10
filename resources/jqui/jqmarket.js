@@ -38,7 +38,7 @@ function MarketJQ(g, parent, cb) {
 
             var vScale = h / MARKETHGT;
             var hScale = w / MARKETWID;
-            console.log("h="+h+", w="+w+", hS="+hScale+", vS="+vScale);
+//            console.log("h="+h+", w="+w+", hS="+hScale+", vS="+vScale);
 
             $.each(slots, function(slot, tile) {
                 var $curTile = $me.find("#market-tile-"+slot);
@@ -46,12 +46,15 @@ function MarketJQ(g, parent, cb) {
                 $curTile.width(TILEHGT * hScale);
                 var lft = tileLocs[slot][0] * hScale;
                 var tp = tileLocs[slot][1] * vScale;
-                console.log(slot+" ("+tile.id+"): left="+lft+", top="+tp);
+                console.log(slot+" ("+tile.id+")");
+//                console.log(slot+" ("+tile.id+"): left="+lft+", top="+tp);
                 $curTile.css("left", lft);
                 $curTile.css("top", tp);
 //                $curTile.removeClass("gamepiece-selected");
 //                $curTile.addClass("gamepiece-unselected");
-                $curTile.find('img').attr("src", tile.img);
+                if (!tile || tile.value <= 0) {
+                    $curTile.find('img').attr("src", tile.img);
+                } else $curTile.find('img').attr("src", tile.img);
             });
         },
         get selectedId() {
@@ -65,9 +68,6 @@ function MarketJQ(g, parent, cb) {
             var s = this.selectedId;
             if (!s) return null;
             return s.substr(this.selectedId.lastIndexOf("-") + 1);
-        },
-        "remove": function(slot) {
-
         }
     };
 }

@@ -19,46 +19,7 @@ html, body {
   height: 100%;
 }
 
-//.boardregion {
-//  width: 100%;
-//}
-/*
-.otherplayerbox {
-  width: 50%;
-}
 
-#deck {
-  width: 15%;
-}
-
-#exchange {
-  width: 35%;
-}
-
-#market {
-  width: 50%;
-  height: 100%;
-}
-
-#playerbox0 {
-  width: 100%;
-}
-
-#otherplayers {
-  height: 25%;
-  min-height: 125px;
-}
-
-#commonboard {
-  height: 30%;
-  min-height: 150px;
-}
-
-#player {
-  height: 45%;
-  min-height: 225px;
-}
-*/
 .gamepiece {
   border: 8px ;
   border-style: solid;
@@ -75,6 +36,9 @@ html, body {
   border-color: lightgoldenrodyellow;
 }
 
+.playerBoard .gamepiece {
+  border: 1px;
+}
 .card {
   border-radius: 15px;
 }
@@ -212,4 +176,18 @@ table {
   width: 35px;
   border-radius: 50%;
   margin-left: 20px;
+}
+
+.action-hidden {
+  display: none;
+}
+
+.unattachedTiles {
+  height: 80px;
+  position: absolute;
+  float: right;
+}
+
+.emptyHidden {
+  display: none;
 }

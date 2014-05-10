@@ -1,5 +1,7 @@
 /**
  * Created by paul on 4/1/2014.
+ *
+ * Maintains current state for the market against the server
  */
 
 function Market() {
@@ -24,32 +26,7 @@ function Market() {
             return m[slot];
         },
         get m() { return m; },
-        /**
-         *
-         * @param payment
-         * @param slot
-         * @return true if the payment is an exact payment for the tile
-         */
-        "isExact": function(payment, slot) {
-
-        },
-        /**
-         * Buy a tile.
-         * <p/>
-         * Note that this only updates the market, not the player
-         * @param price array of cards
-         * @param slot market color
-         * @returns a market tile
-         */
-        "buy":
-            function( price, slot) {
-            $.getJSON("", {
-                "paySet": price,
-                "slot": slot
-            }, function(tile) {
-
-            });
-        }
+//        "buy": function( ) { alert("Error: Market.buy should not be called");}
 
     };
 }

@@ -19,7 +19,8 @@
   "dependencies": {
     "beebole-pure": "*",
     "TinyPubSub": "*",
-    "stapes": "~0.8.1",
-    "async": "~0.6.2"
+    "async": "0.7.0",
+    "jquery-ui": "~1.10.4",
+    "jquery": "~2.1.0"
   }
 }

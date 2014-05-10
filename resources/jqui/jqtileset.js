@@ -105,6 +105,9 @@ function TilesetJQ(ts, parent, idClass, cb) {
             return $.map(indexList, function(index) {
                 return tileset.tiles[index];
             });
+        },
+        get empty() {
+            return !tileset || tileset.length === 0;
         }
     };
 }

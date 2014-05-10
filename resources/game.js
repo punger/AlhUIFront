@@ -4,7 +4,7 @@
 
 /**
  * Game object holds other objects.  Constructs exchange, market and players
- * @param {array} plin array of participating player colors
+ * @param {Array.<string>} plin array of participating player colors
  * @param {string} startplayer the color of the start player
  * @param {parallelCallback} cb synchronization callback
  * @returns {object}
@@ -17,6 +17,88 @@ function Game(plin, startplayer, cb) {
     var xchg;
     var mkt;
     var me = this;
+
+
+    var nextPlayer = function(pCol, cb) {
+        // TODO Support more than one player
+    };
+
+    var refreshAll = function(cb) {
+        async.parallel({
+            "player": function(cb1) {
+                roster[curplayer].refresh(cb1);
+            },
+            "mkt": function(cb1) {
+                mkt.refresh(cb1);
+            },
+            "xchg": function(cb1) {
+                xchg.fill(cb1);
+            }
+        },
+        function(err, res) {
+            console.log("End turn status "+(err || "ok")+", val "+JSON.stringify(res, null, 2));
+            if (cb) cb(err, res);
+        });
+    };
+
+    var score = function(cb) {
+        $.getJSON("score", function(scoreArray) {
+            console.log("Scores:"+JSON.stringify(scoreArray, null, 2));
+            if (cb) cb();
+        });
+    };
+
+    var endTurn = function(cb) {
+        var unattachedTiles = roster[curplayer].temp;
+        if (unattachedTiles && unattachedTiles.length > 0) {
+            console.log(
+                    "Cannot end turn because player "+curplayer+
+                    " still has to place tiles "+JSON.stringify(unattachedTiles, null, 2));
+            if (cb) cb();
+            return;
+        }
+        $.getJSON("endofturn", function(srvrStat) {
+            if (srvrStat.success) {
+                // just go to next player
+                refreshAll(cb);
+                console.log("End turn.  Next player is "+srvrStat.player);
+                nextPlayer(srvrStat.player, cb);
+                return;
+            }
+            //  problem, scoring, or player has more to do.
+            console.log("End turn message: " + srvrStat.message);
+            var curRound = 0;
+            //noinspection FallThroughInSwitchStatementJS
+            switch (srvrStat.message) {
+                case "same player":
+                    console.log("Next showed new player "+srvrStat.player+". Cur player "+curplayer);
+                    cb();
+                    return;
+                case "Scoring round2":
+                    curRound++;
+                case "Scoring round1":
+                    curRound++;
+                    break;
+                case "End of game":
+                    alert("tada");
+                    cb(srvrStat.message);
+                    return;
+            }
+            // record where we are in the round somewhere
+            async.series([
+                function(cb1) {
+                    score(cb1);
+                },
+                function(cb1) {
+                    refreshAll(cb1);
+                }
+            ],function(err){
+                if (cb) cb(err);
+            });
+        });
+
+    };
+
     async.parallel(
         {
             "iXchg": function(cb2) {
@@ -39,40 +121,11 @@ function Game(plin, startplayer, cb) {
             }
         },
         function(err, res) {
-            cb(err, res);
+            if (cb) cb(err, res);
         }
     );
 
-    var nextPlayer = function(pCol, cb) {
 
-    };
-
-    var endTurn = function(cb) {
-        $.getJSON("endofturn", function(srvrStat) {
-            if (!srvrStat.success) {
-                //  problem or scoring
-                cb("End turn server error: "+srvrStat.message);
-            }
-            // just go to next player
-            async.parallel({
-                "player": function(cb1) {
-                    cb1(null, "ok");
-                },
-                "mkt": function(cb1) {
-                    mkt.refresh(cb1);
-                },
-                "xchg": function(cb1) {
-                    xchg.fill(cb1);
-                }
-            },
-            function(err, res) {
-                console.log("End turn status "+(err || "ok")+", val "+JSON.stringify(res));
-                cb(err);
-            });
-//            nextPlayer(srvrStat.player, cb);
-        });
-
-    };
     return {
         /*
          *
@@ -137,7 +190,7 @@ function Game(plin, startplayer, cb) {
                 if (err) {
                     alert(err);
                 }
-                cb(err);
+                if (cb) cb(err);
             });
         },
         "buy": function(offer, tilepos, cb) {
@@ -154,7 +207,8 @@ function Game(plin, startplayer, cb) {
             var buyarg = JSON.stringify(proffer);
             async.series([
                 function(cb1) {
-                    console.log("About to call buy with card list arg  and vendor "+ buyarg);
+                    console.log("About to call buy with card list arg  and vendor "+
+                        JSON.stringify(proffer, null, 2));
                     $.ajax("buytile", {
                         "success": function(srvrStat) {
                             if (!srvrStat.success) {
@@ -163,7 +217,7 @@ function Game(plin, startplayer, cb) {
                             }
                             var p = roster[curplayer];
                             var tile = mkt.getatslot(tilepos);
-                            p.addtoreserve(tile);
+                            p.addToTemp(tile);
                             p.resetHand(cb1);
                         },
                         "headers": {
@@ -178,6 +232,7 @@ function Game(plin, startplayer, cb) {
 
                     });
                 },
+                mkt.refresh,
                 endTurn
 
             ],
@@ -185,9 +240,100 @@ function Game(plin, startplayer, cb) {
                 if (err) {
                     alert(err);
                 }
-                cb(err);
+                if (cb) cb(err);
             });
 
+        },
+        "place": function(source, tile, x, y, cb) {
+            var p = roster[curplayer];
+            async.series([
+                function(cb1) {
+                    console.log("About to place tile "+tile.id+" at ("+x+", "+y+")");
+//                    $.getJSON("placetile", {
+//                        "tileId": tile.id,
+//                        "x": x,
+//                        "y": y
+//                    }, function(srvrStat) {
+//                        if (!srvrStat.success) {
+//                            cb1("Server error: "+srvrStat.message);
+//                        } else cb1();
+//                    });
+                    $.ajax("placetile", {
+                        "success": function(srvrStat) {
+                            if (!srvrStat.success) {
+                                cb1("Server error: "+srvrStat.message);
+                            } else cb1();
+                        },
+                        "headers": {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        "data": JSON.stringify({
+                            "tileId": tile.id,
+                            "x": x,
+                            "y": y
+                        }),
+                        "dataType": "json",
+                        "type": "POST",
+                        contentType: 'application/json',
+                        mimeType: 'application/json'
+
+                    });
+                },
+                function(cb1) {
+                    if (source === "reserve")
+                        p.removeFromReserve(tile);
+                    else {
+                        p.removeFromTemp(tile);
+                    }
+                    p.board.refresh(cb1);
+                },
+                endTurn
+            ],
+            function(err) {
+                if (cb) cb(err);
+            });
+        },
+        /**
+         * Move selected unattached tile to reserve.
+         * This doesn't cost an action
+         * @param tile in unattached to move to reserve (not tile id)
+         * @param cb for completion
+         */
+        "toReserve": function(tile, cb) {
+            var p = roster[curplayer];
+            async.series([
+                    function(cb1) {
+                        console.log("About to move tile "+tile.id+" to reserve");
+                        $.getJSON("toreserve",
+                            {"tile": tile.id},
+                            function (status) {
+                                if (!status.success) {
+                                    cb1("Server error: "+status.message);
+                                } else cb1();
+                            }
+                        );
+                    },
+                    function(cb1) {
+                        p.removeFromTemp(tile);
+                        p.addToReserve(tile);
+                        p.board.refresh(cb1);
+                    },
+                    endTurn
+                ],
+                function(err) {
+                    if (cb) cb(err);
+                }
+            );
+        },
+        "forceEndOfTurn": function (cb) {
+            var p = roster[curplayer];
+            while (p.temp && p.temp.length > 0) {
+                var tile = p.temp[0];
+                p.removeFromTemp(tile);
+                p.addToReserve(tile);
+            }
+            endTurn(cb);
         }
     }
 }

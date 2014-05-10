@@ -1,5 +1,7 @@
 /**
  * Created by paul on 3/18/14.
+ *
+ * Wraps a cardSet.  Refreshes itself from server state.
  */
 
 function Exchange() {
@@ -20,31 +22,32 @@ function Exchange() {
         "fill": function(cb) {
             refresh(cb);
         },
-        "select": function(index) {
-            xchg.select(index);
-        },
-        "take": function() {
-            if (!selectMap ) return;
-            var claim = this.selected();
-            if (claim.length > 1) {
-                var sum = 0;
-                for (var i = o; i < claim.length; i++) {
-                    sum += claim[i].value;
-                }
-                if (sum > 5) {
-                    alert("Selected too many cards ");
-                    return;
-                }
-            }
-            $.getJSON("takecards", {
-                "cards": claim
-            }, function(resp) {
-
-            });
-        },
-        get cards() { return xchg.cards; },
-        get selected() { return xchg.selected(); },
-        get selmap() { return xchg.selmap;},
-        "isselected": function(slot) { return xchg.isselected(slot); }
+//        "select": function(index) {
+//            xchg.select(index);
+//        },
+//        "take": function() {
+//            if (!selectMap ) return;
+//            var claim = this.selected();
+//            if (claim.length > 1) {
+//                var sum = 0;
+//                for (var i = o; i < claim.length; i++) {
+//                    sum += claim[i].value;
+//                }
+//                if (sum > 5) {
+//                    alert("Selected too many cards ");
+//                    return;
+//                }
+//            }
+//            $.getJSON("takecards", {
+//                "cards": claim
+//            }, function(resp) {
+//
+//            });
+//        },
+        get cards() { return xchg.cards; }
+//        ,
+//        get selected() { return xchg.selected(); },
+//        get selmap() { return xchg.selmap;},
+//        "isselected": function(slot) { return xchg.isselected(slot); }
     };
 }
