@@ -21,6 +21,6 @@
     "TinyPubSub": "*",
     "async": "0.7.0",
     "jquery-ui": "~1.10.4",
-    "jquery": "~2.1.0"
+    "jquery": "~2.1.1"
   }
 }

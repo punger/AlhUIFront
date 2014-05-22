@@ -20,6 +20,8 @@ function Game(plin, startplayer, cb) {
 
 
     var nextPlayer = function(pCol, cb) {
+        curplayer = pCol;
+        roster[curplayer].next();
         // TODO Support more than one player
     };
 
@@ -86,12 +88,14 @@ function Game(plin, startplayer, cb) {
             }
             // record where we are in the round somewhere
             async.series([
-                function(cb1) {
-                    score(cb1);
-                },
-                function(cb1) {
-                    refreshAll(cb1);
-                }
+                score,
+                refreshAll
+//                function(cb1) {
+//                    score(cb1);
+//                },
+//                function(cb1) {
+//                    refreshAll(cb1);
+//                }
             ],function(err){
                 if (cb) cb(err);
             });
@@ -167,7 +171,9 @@ function Game(plin, startplayer, cb) {
                                 cb1("Server error: "+srvrStat.message);
                                 return;
                             }
-                            roster[curplayer].addcards(wanted);
+                            var p = roster[curplayer];
+                            p.addcards(wanted);
+                            p.useAction();
                             cb1();
                         },
                         "headers": {
@@ -194,7 +200,9 @@ function Game(plin, startplayer, cb) {
             });
         },
         "buy": function(offer, tilepos, cb) {
+            var totalValue = 0;
             var xCardArray = $.map(offer, function(c){
+                totalValue += c.value;
                 return {
                     "color": c.color,
                     "value": c.value
@@ -218,6 +226,7 @@ function Game(plin, startplayer, cb) {
                             var p = roster[curplayer];
                             var tile = mkt.getatslot(tilepos);
                             p.addToTemp(tile);
+                            if (totalValue > tile.value) p.useAction();
                             p.resetHand(cb1);
                         },
                         "headers": {
@@ -282,8 +291,12 @@ function Game(plin, startplayer, cb) {
                 },
                 function(cb1) {
                     if (source === "reserve")
+                    {
                         p.removeFromReserve(tile);
+                        p.useAction();
+                    }
                     else {
+                        // moving from temp is not an action
                         p.removeFromTemp(tile);
                     }
                     p.board.refresh(cb1);
@@ -333,6 +346,7 @@ function Game(plin, startplayer, cb) {
                 p.removeFromTemp(tile);
                 p.addToReserve(tile);
             }
+            p.useAction();
             endTurn(cb);
         }
     }

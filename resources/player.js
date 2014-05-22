@@ -14,6 +14,8 @@ function Player(pcolor, g, cb) {
     var reserve = [];
     var temp = [];
     var board;
+    var turns = 0;
+    var hasActions = false;
 
     var resetHand = function(cb0) {
         $.getJSON("playerhand", {
@@ -48,7 +50,6 @@ function Player(pcolor, g, cb) {
         get board() { return board; },
         get reserve() { return reserve; },
         get reserveAsTileset() { return { "tiles": reserve}; },
-        "startturn": function() {},
         "addToReserve": function(tile) {
             reserve.push(tile);
         },
@@ -95,6 +96,13 @@ function Player(pcolor, g, cb) {
                 console.log ("player "+mycolor+" refresh all returned "+JSON.stringify(res, null, 2));
                 if (cb) cb(err, res);
             });
-        }
+        },
+        "next": function() {
+            turns++;
+            hasActions = true;
+        },
+        get numTurns() { return turns;},
+        get hasActions() { return hasActions;},
+        "useAction": function() { hasActions = false; }
     };
 }

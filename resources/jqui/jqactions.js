@@ -61,7 +61,14 @@ function ActionJQ(player, parent, cb) {
             }
         },
         "reset": function(cb) {
+            $me = $(parent);
             this.hasTemps(player.temp && player.temp.length > 0);
+            $me.find(".playerturns").text(player.numTurns);
+            if (player.hasActions) {
+                $me.find(".playerhasactions").show();
+            } else {
+                $me.find(".playerhasactions").hide();
+            }
             cb();
         },
         get target() {
